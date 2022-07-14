@@ -1,0 +1,55 @@
+from main import LojadeProdutos
+import sqlite3
+import arrow
+
+ar = arrow.now().format('DD/MM/YYYY HH:mm:ss')
+conexao = sqlite3.connect('lojadeprodutos.db')
+cursor = conexao.cursor()
+
+
+class Vendas(LojadeProdutos):
+    def cadastrar(self):
+        quant_idade = int(input('Digite a quantidade: '))
+        valoruni = float(input('Digite o valor unitário: '))
+        cpf = input('Insira o CPF: ')
+        valortotal = quant_idade * valoruni
+        cursor.execute('INSERT INTO vendas ("data_da_venda", "codigo_de_barras", "cpf", "quantidade",'
+                       '"valor_unitario", "valor_total")'
+                       'VALUES(?,?,?,?,?,?)', (ar, input('Insira o código de barras do produto: '), cpf,
+                                               quant_idade, valoruni, valortotal))
+        conexao.commit()
+
+    def editarVendas(self):
+        decisao = input('O que você quer alterar?\n[Código de Barras]\n[Quantidade]\n[Valor unitário]')
+        if decisao == 'Código de Barras':
+            code_antigo = input('Código de Barras antigo: ')
+            code_novo = input('Código de Barras novo: ')
+            cursor.execute(f'UPDATE vendas SET codigo_de_barras = "{code_novo}"'
+                           f'WHERE codigo_de_barras = "{code_antigo}"')
+            conexao.commit()
+        elif decisao == 'Quantidade':
+            quantidade_antigo = input('Quantifade antigo: ')
+            quantidade_novo = input('Quantidade novo: ')
+            cursor.execute(f'UPDATE vendas SET quantidade = "{quantidade_novo}"'
+                           f'WHERE quantidade = "{quantidade_antigo}"')
+            conexao.commit()
+        else:
+            valor_total_antigo = float(input('Quantidade antiga: '))
+            quantidade_nova = int(input('Quantidade: '))
+            valor_antigo = input('Valor unitário antigo: ')
+            valor_novo = input('Valor unitário novo: ')
+            valor_total = quantidade_nova * valor_novo
+            cursor.execute(f'UPDATE vendas SET valor_unitario = "{valor_novo}"'
+                            f'WHERE valor_unitario = "{valor_antigo}"')
+            cursor.execute(f'UPDATE vendas SET valor_total = "{valor_total}"'
+                            f'WHERE valor_total = "{valor_total_antigo}"')
+            conexao.commit()
+
+    def excluirVenda(self):
+        id4 = int(input('id da Venda: '))
+        cursor.execute(f'DELETE FROM vendas WHERE id = {id4}')
+        conexao.commit()
+
+
+venda = Vendas()
+venda.cadastrar()
