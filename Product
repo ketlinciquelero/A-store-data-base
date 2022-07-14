@@ -1,0 +1,52 @@
+from main import LojadeProdutos
+import sqlite3
+import arrow
+
+ar = arrow.now().format('DD/MM/YYYY')
+conexao = sqlite3.connect('lojadeprodutos.db')
+cursor = conexao.cursor()
+
+
+class Produtos(LojadeProdutos):
+    def cadastrarProduto(self):
+        cursor.execute('INSERT INTO produtos("nomeProduto", "familia", "codigo_de_barras")'
+                       'VALUES(?,?,?)', (input('Digite o nome do produto: '),
+                                         input('Insira a família do produto: '),
+                                         input('Insira o código de barras do produto: ')))
+
+        conexao.commit()
+
+    def editarProdutos(self):
+        decisao = input('O que você quer alterar?\n[Nome do produto]\n[Família]\n[Código de barras]')
+        if decisao == 'Código de Barras':
+            code_antigo = input('Código de Barras antigo: ')
+            code_novo = input('Código de Barras novo: ')
+            cursor.execute(f'UPDATE vendas SET codigo_de_barras = "{code_novo}"'
+                           f'WHERE codigo_de_barras = "{code_antigo}"')
+            conexao.commit()
+        elif decisao == 'Família':
+            familia_antigo = input('Família antigo: ')
+            familia_novo = input('Quantidade novo: ')
+            cursor.execute(f'UPDATE produtos SET familia = "{familia_novo}"'
+                           f'WHERE familia = "{familia_antigo}"')
+            conexao.commit()
+        else:
+            nome_antigo = input('Nome antigo: ')
+            nome_novo = input('Nome novo: ')
+            cursor.execute(f'UPDATE produtos SET nomeProduto = "{nome_novo}"'
+                               f'WHERE nomeProduto = "{nome_antigo}"')
+            conexao.commit()
+    conexao.commit()
+
+    def excluirProduto(self):
+        id3 = int(input('id do Produto: '))
+        cursor.execute(f'DELETE FROM produtos WHERE id = {id3}')
+        conexao.commit()
+
+
+produto = Produtos()
+
+produto.editarProdutos()
+produto.editarProdutos()
+
+
