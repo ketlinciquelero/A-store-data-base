@@ -1,0 +1,59 @@
+from main import LojadeProdutos
+import requests
+import sqlite3
+import arrow
+
+ar = arrow.now().format('DD/MM/YYYY')
+conexao = sqlite3.connect('lojadeprodutos.db')
+cursor = conexao.cursor()
+
+
+class Cliente(LojadeProdutos):
+    def cadastrarCliente(self):
+        cliente = input('Digite o nome do cliente: ')
+        cep = input('Digite o CEP: ')
+        cpf = input('Digite o CPF: ')
+        info = requests.get(f'https://cep.awesomeapi.com.br/json/{cep}')
+        info = info.json()
+        rua = info['address']
+        estado = info['state']
+        bairro = info['district']
+        cidade = info['city']
+        cursor.execute('INSERT INTO clientes ("cliente", "cpf", "cidade",'
+                       '"estado", "bairro", "rua", "cep", "numero")'
+                       'VALUES(?,?,?,?,?,?,?,?)', (cliente, cpf, cidade, estado,
+                                                   bairro, rua, cep,
+                                                   input('Insira o número do endereço do cliente: ')))
+        conexao.commit()
+
+    def editarCliente(self):
+        decisao = input('O que você quer alterar?\n[Cliente]\n[CPF]\n[CEP]\n[Numero da casa]\nSua escolha: ')
+        if decisao == 'Cliente':
+            nome_antigo = input('Nome antigo: ')
+            nome_novo = input('Nome novo: ')
+            cursor.execute(f'UPDATE clientes SET cliente = "{nome_novo}"'
+                           f'WHERE cliente = "{nome_antigo}"')
+            conexao.commit()
+        elif decisao == 'CPF':
+            cpf_antigo = input('CPF antigo: ')
+            cpf_novo = input('CPF novo: ')
+            cursor.execute(f'UPDATE clientes SET cpf = "{cpf_novo}"'
+                           f'WHERE cpf = "{cpf_antigo}"')
+            conexao.commit()
+        elif decisao == 'CEP':
+            cep_antigo = input('CEP antigo: ')
+            cep_novo = input('CEP novo: ')
+            cursor.execute(f'UPDATE clientes SET cep = "{cep_novo}"'
+                           f'WHERE cep = "{cep_antigo}"')
+            conexao.commit()
+        else:
+            num_antigo = input('Número antigo: ')
+            num_novo = input('Número novo: ')
+            cursor.execute(f'UPDATE clientes SET numero = "{num_novo}"'
+                           f'WHERE numero = "{num_antigo}"')
+            conexao.commit()
+
+    def excluirClientes(self):
+        id2 = int(input('id do Cliente: '))
+        cursor.execute(f'DELETE FROM clientes WHERE id = {id2}')
+        conexao.commit()
